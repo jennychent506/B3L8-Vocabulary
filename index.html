@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VocabPop 單字學習平台 - L8 Elephant Abuse: The Thai Tourism Industry’s Dark Secret</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // 封面圖（取自 L8 課本 PDF 第 184 頁，已內嵌；請把 __COVER__ 換成 base64 字串）
+    const COVER_IMG = "data:image/jpeg;base64,__COVER__";
+
+    // --- L8 Elephant Abuse：Words for Production + Idioms and Phrases ---
+    // 欄位：word, kk, syllables, stressIndex, pos, meaning, chinese, wordFamily, matchPairs("英|中"), example, exampleChinese, targetInExample
+    const raw = [
+      ["abuse","/əˈbjus/",["a","buse"],1,"n.","Cruel or violent treatment of someone; also the wrong use of something.","虐待；濫用","abuse (vt.) 虐待",["child abuse|虐待兒童","drug abuse|藥物濫用","a victim of abuse|虐待的受害者"],"When Johnny came to school with another black eye, his teachers feared he might be a victim of child abuse.","當 Johnny 帶著另一個青腫眼眶到學校時，他的老師擔心他可能是虐待兒童罪行的受害者。","abuse"],
+      ["abuse","/əˈbjuz/",["a","buse"],1,"vt.","To treat someone or something cruelly.","虐待","abuse (n.) 虐待；濫用",["abuse animals|虐待動物","abuse physically and mentally|在生理及心理上虐待","be abused by|被…虐待"],"Eva not only hits her son but is always criticizing him too. She therefore abuses him both physically and mentally.","Eva 不只打她的兒子而且也總是責罵他。因此，她在生理及心理上都虐待他。","abuses"],
+      ["highlight","/ˈhaɪˌlaɪt/",["high","light"],0,"n.","The most exciting or important part of something.","最精彩的部分","highlighter (n.) 螢光筆",["the highlight of the trip|旅程最精彩的部分","a yellow highlighter|黃色螢光筆","the highlight of the concert|演唱會的高潮"],"The singer’s proposal to his girlfriend was the highlight of the concert.","這名歌手對他女友求婚是這場演唱會最精彩的部分。","highlight"],
+      ["highlight","/ˈhaɪˌlaɪt/",["high","light"],0,"vt.","To emphasize or draw attention to something.","強調","highlight (n.) 最精彩的部分",["highlight the dangers|強調危險","highlight a reason|強調一個原因","highlight the importance|強調重要性"],"Since it mainly highlights the dangers of drunk driving, the report is titled “Deadly Drivers.”","因為這份報導主要強調酒駕的危險，它的標題為〈致命的駕駛〉。","highlights"],
+      ["economy","/ɪˈkɑnəmɪ/",["e","con","o","my"],1,"n.","The system of money, trade, and industry of a country.","經濟","economic (adj.) 經濟上的；economical (adj.) 節約的",["sharing economy|共享經濟","domestic economy|國內經濟","the economy recovers|經濟復甦"],"Japan’s domestic economy has been in recession for more than a decade, so local businesses are struggling to grow.","日本的國內經濟不景氣已經超過十年，所以當地的企業正奮力成長。","economy"],
+      ["economic","/ˌikəˈnɑmɪk/",["ec","o","nom","ic"],2,"adj.","Related to the economy; related to economics.","經濟上的；經濟學的","economy (n.) 經濟",["economic growth|經濟成長","economic development|經濟發展","trade deals|貿易協議"],"“The Taiwan Miracle” refers to the rapid economic development of Taiwan in the latter half of the twentieth century.","「臺灣奇蹟」指的是二十世紀後半臺灣的急速經濟發展。","economic"],
+      ["economical","/ˌikəˈnɑmɪkḷ/",["ec","o","nom","i","cal"],2,"adj.","Saving money, time, or fuel.","節約的；經濟實惠的","economy (n.) 經濟",["economical on fuel|節省燃料","an economical choice|經濟實惠的選擇","more economical|更節約的"],"Small cars are usually more economical on fuel than big cars because they are lighter.","小型車通常比大型車更節省燃料，因為它們比較輕。","economical"],
+      ["demand","/dɪˈmænd/",["de","mand"],1,"n.","A need for goods or services; a strong request.","需求；要求","on demand 一經要求",["in great demand|需求很大","on demand|一經要求","satisfy the demand|滿足需求"],"Due to the highly contagious disease, face masks are now in great demand and very difficult to purchase.","由於這個極具傳染性的疾病，口罩現在需求很大，而且很難購買得到。","demand"],
+      ["demand","/dɪˈmænd/",["de","mand"],1,"vt.","To ask for something firmly.","要求","demand (n.) 需求；要求",["demand to speak to|要求與…對談","demand that...|要求…","demand an answer|要求答覆"],"In order to stop the virus from spreading, the government has demanded that everyone stay home for two weeks.","為了制止病毒蔓延，政府已要求每個人留在家中兩週。","demanded"],
+      ["illegally","/ɪˈligḷɪ/",["il","le","gal","ly"],1,"adv.","In a way that is against the law.","非法地","illegal (adj.) 非法的",["illegally dump|非法傾倒","illegally sell|非法販售","use nets illegally|非法使用漁網"],"The company was fined for illegally dumping toxic waste into the river.","這家公司因非法傾倒有毒廢棄物到河裡而被罰款。","illegally"],
+      ["illegal","/ɪˈligḷ/",["il","le","gal"],1,"adj.","Against the law.","非法的","illegally (adv.) 非法地；legal (adj.) 合法的",["illegal logging|非法伐木","it’s illegal to + VR|…是違法的","illegal activity|非法活動"],"The government is working to prevent illegal logging in protected forests.","政府正努力防止於保護森林內所進行的非法伐木活動。","illegal"],
+      ["legal","/ˈligḷ/",["le","gal"],0,"adj.","Allowed by law; related to the law.","合法的；法律的","illegal (adj.) 非法的",["legal advice|法律建議","legal terms|法律術語","legal in many countries|在許多國家合法"],"Julian needed legal advice during his divorce, so he contacted an old friend who was a lawyer to ask for help.","Julian 離婚時需要法律建議，所以他聯絡一個當律師的老朋友請求幫忙。","legal"],
+      ["lure","/lʊr/",["lure"],0,"vt.","To attract someone or something by offering something appealing.","引誘","tempt (vt.) 引誘",["lure customers|吸引顧客","lure with discounts|用折扣吸引","lure out of|把…引誘出來"],"Just like traditional stores, online shopping websites often lure customers with discounts.","正如同傳統商店，線上購物網站時常使用折扣吸引顧客。","lure"],
+      ["lure","/lʊr/",["lure"],0,"n.","The attraction of something tempting.","誘惑；吸引力","lure (vt.) 引誘",["the lure of power|權力的誘惑","resist the lure|抵擋誘惑","the lure of mystery|神祕的誘惑"],"Few politicians can resist the lure of power. Being in complete control is simply too tempting.","鮮少政治人物能抵抗權力的誘惑。擁有完全的支配權實在太誘人。","lure"],
+      ["herd","/hɝd/",["herd"],0,"n.","A large group of animals of the same kind.","獸群","herd instinct 群體（盲從）本能",["a herd of cattle|一群牛","herd instinct|群體本能","a herd of elephants|一群大象"],"The driver had to stop the bus because a herd of about twenty cows was blocking the road.","駕駛必須將公車停下來，因為一群大約二十頭的牛正擋住去路。","herd"],
+      ["brutal","/ˈbrutḷ/",["bru","tal"],0,"adj.","Very cruel and violent.","殘暴的","brute (n.) 殘暴者",["a brutal attack|殘暴的攻擊","brutal killing|殘殺","a brutal terrorist|殘暴的恐怖分子"],"Adolph Hitler ordered the brutal killing of millions of innocent people and was one of the most evil leaders in history.","希特勒曾下令殘殺數百萬無辜的人，是史上最邪惡的領袖之一。","brutal"],
+      ["operator","/ˈɑpəˌretɚ/",["op","er","a","tor"],0,"n.","A person or company that runs a business; a person who connects phone calls.","經營者；總機","operate (vi.) 經營；operation (n.) 營運；手術",["tour operator|旅遊業者","ferry operator|渡輪業者","ask an operator|請總機轉接"],"With more and more foreigners visiting the town, two or three more tour operators are needed to meet the demand.","隨著愈來愈多外國人到訪此小鎮，還需要二到三間旅遊業者以滿足需求。","operators"],
+      ["operate","/ˈɑpəˌret/",["op","er","ate"],0,"vi.","To run or work, as a business or service does.","經營；營運","operator (n.) 經營者；operation (n.) 營運",["operate in|在…營運","operate within the city|在市內營運","operate worldwide|在全球營運"],"An international success story, the airline operates in over eighty countries worldwide.","這間航空公司在世界各地超過八十個國家營運，蔚為國際間的成功故事。","operates"],
+      ["operation","/ˌɑpəˈreʃən/",["op","er","a","tion"],2,"n.","The running of a business; a medical surgery.","營運；業務；手術","operate (vi.) 營運",["the operation of|…的營運","legal operations|法律業務","have an operation|動手術"],"My uncle needs to have an operation on his knee because he can barely walk now.","我的叔叔需要動膝蓋手術因為他現在不太能行走。","operation"],
+      ["mercilessly","/ˈmɝsɪlɪslɪ/",["mer","ci","less","ly"],0,"adv.","Without any pity; in a cruel way.","冷酷無情地；殘忍地","merciless (adj.) 冷酷無情的；mercy (n.) 仁慈",["treat mercilessly|殘忍地對待","punish mercilessly|冷酷地懲罰","mercilessly bullied|被無情地霸凌"],"The cruel king mercilessly punished all criminals by ordering his soldiers to torture them.","這位殘暴的國王冷酷無情地懲罰所有的罪犯，命令他的士兵折磨他們。","mercilessly"],
+      ["merciless","/ˈmɝsɪlɪs/",["mer","ci","less"],0,"adj.","Showing no pity; cruel.","冷酷無情的；殘忍的","mercilessly (adv.) 冷酷無情地；mercy (n.) 仁慈",["merciless attacks|無情的攻擊","merciless comments|冷酷的評論","a merciless king|殘忍的國王"],"The reviewer was merciless in his negative comments about the restaurant, giving it only one star.","這個評論家在他對這間餐廳的負面評論裡很冷酷無情，只給了一顆星。","merciless"],
+      ["mercy","/ˈmɝsɪ/",["mer","cy"],0,"n.","Kindness shown to someone who could be punished or harmed.","仁慈；慈悲","mercy killing 安樂死（= euthanasia）",["show no mercy|毫不留情","beg for mercy|請求寬恕","mercy killing|安樂死"],"Although the bank robber begged the judge for mercy, he was still sentenced to fifteen years in prison.","雖然那名銀行搶匪請求法官寬恕，他仍被判刑入獄十五年。","mercy"],
+      ["strike","/straɪk/",["strike"],0,"vt.","To hit someone or something with force.","打；擊；（強力）擊；撞","strike (n.) 罷工",["strike the wall|擊牆","strike a chord|引起共鳴","struck by lightning|遭閃電擊中"],"After hearing the news, Roy was so angry that he struck the wall with his fist.","聽到這個消息之後，Roy 太生氣而用他的拳頭擊牆。","struck"],
+      ["strike","/straɪk/",["strike"],0,"n.","A refusal to work as a protest.","罷工","strike (vt.) 打；擊",["go on strike|罷工","on strike|罷工中","refuse to play|拒絕出賽"],"NBA players, not satisfied with their salaries, went on strike in 2011 and refused to play.","對於薪資不滿意的美國職籃球員在2011年罷工，並拒絕出賽。","strike"],
+      ["commit","/kəˈmɪt/",["com","mit"],1,"vt.","To do something wrong or illegal; to promise to do something.","犯（罪）；承諾；保證","commitment (n.) 承諾；保證",["commit murder|犯下兇殺罪","commit an offence/fraud|犯法／犯詐欺罪","commit oneself to|承諾（做）…"],"It is so shocking to know that this kind old man committed murder when he was young.","知道這位善良的老人年輕時曾犯下兇殺罪很令人震驚。","committed"],
+      ["commitment","/kəˈmɪtmənt/",["com","mit","ment"],1,"n.","A promise to do something.","承諾；保證","commit (vt.) 犯（罪）；承諾",["make a commitment|做出承諾","fulfill commitments|履行承諾","a commitment to attend|出席的承諾"],"Edward is a man who always fulfills his commitments; you can count on him.","Edward 是一位總是實現承諾的男人；你可以倚靠他。","commitments"],
+      ["obedient","/əˈbidɪənt/",["o","be","di","ent"],1,"adj.","Willing to do what you are told.","服從的；順從的","obey (vt.) 服從；obedience (n.) 服從",["obedient to|服從…","obedient kids|順從的孩子","an obedient dog|聽話的狗"],"Helix the guide dog is very obedient to his owner and always does what she asks immediately.","導盲犬 Helix 非常服從牠的主人，而且總是立刻做她所要求的事。","obedient"],
+      ["obey","/əˈbe/",["o","bey"],1,"vt.","To do what you are told to do.","服從；順從","obedient (adj.) 服從的；obedience (n.) 服從",["obey orders|服從命令","refuse to obey|拒絕服從","obey the law|遵守法律"],"When the general told his soldiers to bomb a village filled with innocent women and children, they refused to obey his orders.","當將軍要他的士兵轟炸一個滿是無辜婦女與孩童的村莊時，他們拒絕服從他的命令。","obey"],
+      ["obedience","/əˈbidɪəns/",["o","be","di","ence"],1,"n.","The act of doing what you are told.","服從","obey (vt.) 服從；obedient (adj.) 服從的",["in obedience to|服從…","total obedience|絕對服從","demand obedience|要求服從"],"Dictators demand total obedience from their people. The former expect the latter to comply no matter what.","獨裁者要求人民絕對服從。前者期待後者無論如何都要順從。","obedience"],
+      ["tame","/tem/",["tame"],0,"vt.","To make a wild animal gentle and obedient.","馴服","tamer (n.) 馴獸師；tame (adj.) 馴服的",["tame a wolf|馴服一匹狼","tame tigers|馴服老虎","wild beasts|野獸"],"By feeding the wolf daily for a month, Scott was finally able to tame it and become its master.","藉由每天餵食這匹狼一個月，Scott 終於能夠馴服牠並成為牠的主人。","tame"],
+      ["tame","/tem/",["tame"],0,"adj.","Gentle and not wild; used to humans.","馴服的","tamer (n.) 馴獸師；tame (vt.) 馴服",["a tame dog|馴服的狗","tame animals|馴服的動物","used to working with humans|習慣與人類共事"],"Emma’s dog is very tame and won’t bite anyone. In fact, it hardly ever barks.","Emma 的狗非常馴服且不會咬任何人。事實上，牠鮮少吠叫。","tame"],
+      ["vulnerable","/ˈvʌlnərəbḷ/",["vul","ner","a","ble"],0,"adj.","Easily hurt or harmed.","脆弱的；容易受傷害的","-",["vulnerable to|易受…傷害","vulnerable to infections|易受感染","a vulnerable position|容易受傷的狀況"],"Without a helmet, cyclists are particularly vulnerable to head injuries in an accident.","如果沒有安全帽，自行車騎士在事故中特別容易受到頭部傷害。","vulnerable"],
+      ["permanent","/ˈpɝmənənt/",["per","ma","nent"],0,"adj.","Lasting forever or for a very long time.","永久的","temporary (adj.) 暫時的",["permanent damage|永久傷害","a permanent tattoo|永久刺青","a permanent place to stay|固定的居所"],"Staring at the sun for too long could cause permanent damage to your eyes.","直視太陽太久會造成眼睛的永久傷害。","permanent"],
+      ["adequate","/ˈædəkwɪt/",["ad","e","quate"],0,"adj.","Enough for a particular purpose.","充足的；足夠的","sufficient (adj.) 足夠的",["adequate practice|足夠的練習","an adequate amount of|足夠量的…","adequate for|對…足夠"],"Arnold didn’t pass the test because he didn’t spend an adequate amount of time preparing for it.","Arnold 沒通過考試，因為他沒花足夠的時間為它準備。","adequate"],
+      ["exhaustion","/ɪgˈzɔstʃən/",["ex","haus","tion"],1,"n.","A state of extreme tiredness.","筋疲力盡","exhaust (vt.) 使筋疲力盡；fatigue (n.) 疲憊",["collapse with exhaustion|因筋疲力盡而昏倒","suffer exhaustion|筋疲力盡","shaking with exhaustion|累得發抖"],"After marching for hours in the boiling heat, many of the soldiers collapsed with exhaustion.","在酷熱中行軍數小時，許多的士兵因為筋疲力盡而昏倒。","exhaustion"],
+      ["exhaust","/ɪgˈzɔst/",["ex","haust"],1,"vt.","To make someone extremely tired.","使筋疲力盡","exhaustion (n.) 筋疲力盡",["exhaust the driver|使司機筋疲力盡","really exhausted|累壞了","stay awake all night|整晚不睡"],"Playing in the park all afternoon really exhausted the kids. They are sleeping soundly in their room.","整個下午在公園裡玩耍真的讓孩子們筋疲力盡。他們正在他們房裡睡得很熟。","exhausted"],
+      ["complex","/kəmˈplɛks/",["com","plex"],1,"adj.","Made of many parts; difficult to understand.","複雜的","complex (n.) 情結",["highly complex|極為複雜","complex puzzles|複雜的謎題","complex creatures|複雜的生物"],"Compared with simple worms or jellyfish, turtles are far more complex creatures.","與簡單的蟲或水母相比，烏龜是複雜得多的生物。","complex"],
+      ["complex","/ˈkɑmplɛks/",["com","plex"],0,"n.","A strong, often unreasonable, feeling of fear or worry.","情結","complex (adj.) 複雜的",["inferiority complex|自卑情結","give sb. a complex|使某人產生情結","have a complex|有情結"],"Being shorter than his classmates has given Dylan an inferiority complex.","比同學矮讓 Dylan 有了自卑情結。","complex"],
+      ["intelligent","/ɪnˈtɛlədʒənt/",["in","tel","li","gent"],1,"adj.","Good at learning and understanding; showing good judgment.","聰明的；有才智的；有見地的","intelligence (n.) 智力；才智",["highly intelligent|絕頂聰明","intelligent answers|有見地的答案","an intelligent person|聰明的人"],"When little Penny started solving complex puzzles at an early age, her parents realized their daughter was highly intelligent.","當小 Penny 在很小的年紀便開始解開複雜的謎題時，她的父母了解到他們的女兒聰明過人。","intelligent"],
+      ["intelligence","/ɪnˈtɛlədʒəns/",["in","tel","li","gence"],1,"n.","The ability to learn, understand, and think.","智力；才智","intelligent (adj.) 聰明的",["artificial intelligence|人工智慧","emotional intelligence|情緒智商","human intelligence|人類智力"],"To be a good psychologist, you obviously need an adequate amount of emotional intelligence or EQ.","要當一個好的心理學家，你顯然需要足夠的情緒智商，或稱EQ。","intelligence"],
+      ["highlighter","/ˈhaɪˌlaɪtɚ/",["high","light","er"],0,"n.","A pen with bright, see-through ink used to mark important words.","螢光筆","highlight (n./vt.) 最精彩的部分；強調",["a yellow highlighter|黃色螢光筆","use a highlighter|使用螢光筆","mark with a highlighter|用螢光筆標記"],"Vera used a yellow highlighter to mark her favorite sentences in the novel.","Vera 用黃色螢光筆在小說裡標記她最愛的句子。","highlighter"],
+      ["brute","/brut/",["brute"],0,"n.","A cruel, violent person.","殘暴者","brutal (adj.) 殘暴的",["a typical brute|典型的殘暴者","bully the kids|霸凌孩子","a cruel brute|殘暴的人"],"In the TV show Doraemon, Big G is a typical brute who bullies all the other kids in the neighborhood.","在電視節目《哆啦 A 夢》裡，胖虎是典型的殘暴者，霸凌社區裡所有其他的孩子。","brute"],
+      ["tamer","/ˈtemɚ/",["tam","er"],0,"n.","A person who trains wild animals.","馴獸師","tame (vt./adj.) 馴服",["a tamer in the movie business|電影業的馴獸師","a lion tamer|馴獅師","train wild animals|訓練野生動物"],"As a tamer in the movie business, Shawn trains wild animals until they’re ready to be filmed with actors.","身為電影業的馴獸師，Shawn 訓練野生動物直到牠們準備好能與演員們一同拍戲。","tamer"],
+
+      // --- Idioms and Phrases ---
+      ["lead to","/lid tu/",["lead","to"],-1,"phr.","To cause or result in something.","導致；造成","-",["lead to an increase|導致增加","may lead to war|可能導致戰爭","lead to destruction|導致破壞"],"Many people are worried that the conflict between the two countries may lead to a Third World War.","許多人擔心這兩個國家之間的衝突可能導致第三次世界大戰。","lead to"],
+      ["what’s more","/hwʌts mor/",["what’s","more"],-1,"phr.","In addition; furthermore.","此外","-",["What’s more, ...|此外…","in addition|此外","furthermore|再者"],"Running a red light is illegal. What’s more, it’s extremely dangerous and could lead to serious injuries or even death.","闖紅燈是違法的。此外，這極度危險，也可能導致嚴重的傷害，甚至是死亡。","What’s more"],
+      ["worse still","/wɝs stɪl/",["worse","still"],-1,"phr.","Used to add something even worse to a bad situation.","更糟的是","-",["Worse still, ...|更糟的是…","what’s worse|更糟的是","better still|更棒的是"],"Linda may be late for the meeting. Worse still, she may not be able to show up at all.","Linda 參加會議可能會遲到。更糟的是，她可能完全無法出現。","Worse still"],
+      ["deal with","/dil wɪð/",["deal","with"],-1,"phr.","To take action to solve a problem or handle something.","解決；處理","deal—dealt—dealt",["deal with problems|處理問題","deal with a crisis|處理危機","dealt with finding a hotel|處理找飯店的事"],"The government should take prompt action to deal with this financial crisis.","政府應該迅速採取行動來處理這場財政危機。","deal with"],
+      ["take pleasure in","/tek ˈplɛʒɚ ɪn/",["take","plea","sure","in"],-1,"phr.","To enjoy doing something.","以……為樂；喜歡做……","be crazy about 同義",["take great pleasure in|非常以…為樂","take pleasure in V-ing|以做…為樂","take pleasure in group buying|以團購為樂"],"Cameron takes great pleasure in group buying. She and her friends are always shopping for the next online bargain.","Cameron 以團購為樂。她和她的朋友總是在購買下一個線上特價品。","takes great pleasure in"],
+      ["go about","/go əˈbaʊt/",["go","a","bout"],-1,"phr.","To start doing something or keep busy with something.","做……；忙碌於……","-",["go about + V-ing|開始做…","go about one’s work|忙著做自己的事","go about one’s business|忙自己的事"],"Debra lets her employees go about their work independently. You won’t find her looking over anyone’s shoulder.","Debra 讓她的員工獨立作業。你不會發現她在監督他們。","go about"],
+    ];
+    const vocabularyBank = raw.map(r => ({
+      word: r[0], kk: r[1], syllables: r[2], stressIndex: r[3], pos: r[4], meaning: r[5], chinese: r[6], wordFamily: r[7],
+      matchPairs: r[8].slice(0, 3).map(s => { const [en, zh] = s.split("|"); return { en, zh }; }),
+      example: r[9], exampleChinese: r[10], targetInExample: r[11]
+    }));
+
+    // 去除片語中的「...」與括號，作為發音／拼字／語音辨識用的純文字
+    const cleanWord = (w) => w.replace(/\.\.\./g, ' ').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+
+    // --- Web Audio API 提示音效產生器 ---
+    const playTone = (type) => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if (type === 'correct') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+          osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'wrong') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.setValueAtTime(200, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, ctx.currentTime);
+          gain.gain.setValueAtTime(0.05, ctx.currentTime);
+          osc.start(); osc.stop(ctx.currentTime + 0.05);
+        }
+      } catch (e) { console.log(e); }
+    };
+
+    // --- 共用 UI 元件 ---
+    const BrutalContainer = ({ children, className = "" }) => (
+      <div className={`border-[3px] border-black shadow-[4px_4px_0_0_#000] rounded-2xl ${className}`}>{children}</div>
+    );
+
+    const BrutalButton = ({ onClick, children, className = "", disabled = false, type }) => (
+      <button
+        type={type}
+        onClick={(e) => { playTone('click'); if (onClick) onClick(e); }}
+        disabled={disabled}
+        className={`font-bold border-[3px] border-black rounded-xl transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[4px_4px_0_0_#000] ${className} ${disabled ? 'shadow-[4px_4px_0_0_#000]' : 'shadow-[4px_4px_0_0_#000] hover:bg-opacity-90'}`}
+      >{children}</button>
+    );
+
+    const mkIcon = (size, children) => () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+    );
+    const MicShape = <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></>;
+    const VolShape = <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></>;
+    const BoltShape = <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>;
+    const Icons = {
+      Lightning: mkIcon(24, BoltShape),
+      Volume: mkIcon(24, VolShape),
+      Mic: mkIcon(24, MicShape),
+      Keyboard: mkIcon(24, <><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><path d="M6 8h.001"></path><path d="M10 8h.001"></path><path d="M14 8h.001"></path><path d="M18 8h.001"></path><path d="M8 12h.001"></path><path d="M12 12h.001"></path><path d="M16 12h.001"></path><path d="M7 16h10"></path></>),
+      Pen: mkIcon(24, <><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></>),
+      Book: mkIcon(24, <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></>),
+      Brain: mkIcon(24, <><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path></>),
+      Exit: mkIcon(20, <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></>)
+    };
+
+    // --- 主應用程式元件 ---
+    function App() {
+      const [user, setUser] = useState({ classNum: '', seatNum: '', name: '' });
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+      const [view, setView] = useState('learn');
+      const [xp, setXp] = useState(0);
+      const [level, setLevel] = useState(1);
+
+      const [currentWordIndex, setCurrentWordIndex] = useState(0);
+      const [quizList, setQuizList] = useState([]);
+      const [quizIndex, setQuizIndex] = useState(0);
+
+      // --- 後台資料庫 (Google Apps Script) 追蹤狀態 ---
+      const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbym6il26xYJHJbTi-XJe5f6TO7-WVNNKNUqmwA4RqDy_TQqrNj9xSaylDzbXq6TBM0xUQ/exec';
+      const [sessionStartTime, setSessionStartTime] = useState(Date.now());
+      const [sessionScore, setSessionScore] = useState(0);
+
+      useEffect(() => { setLevel(Math.floor(xp / 50) + 1); }, [xp]);
+
+      const handleLogin = (userData) => {
+        setUser(userData);
+        setCurrentWordIndex(0);
+        setSessionScore(0);
+        setSessionStartTime(Date.now());
+        setIsLoggedIn(true);
+      };
+
+      const playAudio = (text) => {
+        const utterance = new SpeechSynthesisUtterance(cleanWord(text));
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+      };
+
+      const sendRecordToGAS = (targetViewToRecord, isCompleted = false) => {
+        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes('請貼上')) return;
+        const durationSecs = Math.round((Date.now() - sessionStartTime) / 1000);
+        const mins = Math.floor(durationSecs / 60);
+        const secs = durationSecs % 60;
+        const durationStr = mins > 0 ? `${mins}分${secs}秒` : `${secs}秒`;
+        let displayScore = targetViewToRecord === 'learn' ? `${sessionScore}題` : `${sessionScore}/15`;
+        const payload = {
+          classNum: user.classNum, seatNum: user.seatNum, name: user.name,
+          mode: targetViewToRecord.toUpperCase(), score: displayScore,
+          duration: durationStr, completed: isCompleted ? "Y" : "N"
+        };
+        fetch(GAS_WEB_APP_URL, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        }).catch(err => console.error("GAS Error:", err));
+      };
+
+      const changeView = (newView) => {
+        if (['learn', 'prospeak', 'spellit', 'fillin'].includes(view) && newView !== view) {
+          const isCompleted = (view !== 'learn' && quizIndex >= 14);
+          sendRecordToGAS(view, isCompleted);
+        }
+        if (['learn', 'prospeak', 'spellit', 'fillin'].includes(newView) && newView !== view) {
+          setSessionScore(0);
+          setSessionStartTime(Date.now());
+        }
+        setView(newView);
+      };
+
+      const startQuiz = (mode) => {
+        const seen = new Set();
+        const shuffled = [...vocabularyBank].sort(() => 0.5 - Math.random()).filter(v => { const k = cleanWord(v.word).toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 15);
+        setQuizList(shuffled);
+        setQuizIndex(0);
+        changeView(mode);
+      };
+
+      const nextLearnWord = () => { setCurrentWordIndex((prev) => (prev + 1) % vocabularyBank.length); };
+
+      const nextQuizQuestion = () => {
+        if (quizIndex < 14) {
+          setQuizIndex(quizIndex + 1);
+        } else {
+          showToast('測驗完成！', 'success');
+          changeView('coach');
+        }
+      };
+
+      const [toastMsg, setToastMsg] = useState(null);
+      const showToast = (msg, type = 'success') => {
+        setToastMsg({ text: msg, type });
+        setTimeout(() => setToastMsg(null), 2000);
+      };
+
+      if (!isLoggedIn) return <LoginScreen onLogin={handleLogin} />;
+
+      return (
+        <div className="min-h-screen bg-[#fae8eb] p-4 font-sans text-black selection:bg-indigo-300 flex justify-center pb-20">
+          <div className="w-full max-w-md flex flex-col gap-4">
+
+            {toastMsg && (
+              <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full font-bold border-2 border-black shadow-[4px_4px_0_0_#000] animate-bounce ${toastMsg.type === 'success' ? 'bg-green-400' : 'bg-red-400'}`}>
+                {toastMsg.text}
+              </div>
+            )}
+
+            <BrutalContainer className="bg-white flex justify-between items-center p-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-yellow-300 border-2 border-black flex items-center justify-center">
+                  <Icons.Lightning />
+                </div>
+                <div>
+                  <h1 className="font-black text-xl italic text-indigo-600 leading-none">VOCAB<span className="text-pink-500">POP</span></h1>
+                  <p className="text-xs text-gray-500 font-bold">👤 {user.classNum}班 {user.seatNum}號 {user.name}</p>
+                </div>
+              </div>
+              <div className="bg-black text-white px-3 py-1.5 rounded-full text-sm font-bold flex gap-2 items-center">
+                <span className="text-yellow-400">★ LV.{level}</span>
+                <span className="text-gray-400">|</span>
+                <span>{xp} XP</span>
+              </div>
+            </BrutalContainer>
+
+            {['learn', 'coach'].includes(view) && (
+              <div className="flex gap-4">
+                <BrutalButton onClick={() => changeView('learn')} className={`flex-1 py-3 flex items-center justify-center gap-2 text-lg ${view === 'learn' ? 'bg-[#93c5fd]' : 'bg-white'}`}>
+                  <Icons.Book /> LEARN
+                </BrutalButton>
+                <BrutalButton onClick={() => changeView('coach')} className={`flex-1 py-3 flex items-center justify-center gap-2 text-lg ${view === 'coach' ? 'bg-[#fbcfe8]' : 'bg-white'}`}>
+                  <Icons.Brain /> COACH
+                </BrutalButton>
+              </div>
+            )}
+
+            {!['learn', 'coach'].includes(view) && (
+              <div className="flex justify-between items-center">
+                <BrutalButton onClick={() => changeView('coach')} className="bg-white px-4 py-2 flex items-center gap-2 text-sm">
+                  <Icons.Exit /> EXIT
+                </BrutalButton>
+                <div className="bg-white border-2 border-black font-black px-4 py-1 rounded-full text-sm shadow-[2px_2px_0_0_#000]">
+                  {quizIndex + 1} / 15
+                </div>
+              </div>
+            )}
+
+            <div className="flex-1 mt-2 flex flex-col">
+              {view === 'learn' && <LearnMode data={vocabularyBank[currentWordIndex]} playAudio={playAudio} onNext={nextLearnWord} onScore={() => {setXp(xp + 10); setSessionScore(s => s + 1); showToast('+10 XP!');}} />}
+              {view === 'coach' && <CoachMenu startQuiz={startQuiz} />}
+              {view === 'prospeak' && <ProSpeakMode data={quizList[quizIndex]} playAudio={playAudio} onNext={nextQuizQuestion} onScore={() => {setXp(xp + 15); setSessionScore(s => s + 1); showToast('+15 XP!');}} />}
+              {view === 'spellit' && <SpellItMode data={quizList[quizIndex]} playAudio={playAudio} onNext={nextQuizQuestion} onScore={() => {setXp(xp + 20); setSessionScore(s => s + 1); showToast('+20 XP!');}} />}
+              {view === 'fillin' && <FillInMode data={quizList[quizIndex]} onNext={nextQuizQuestion} onScore={() => {setXp(xp + 20); setSessionScore(s => s + 1); showToast('+20 XP!');}} />}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- 登入畫面元件（課文標題 + 課本封面背景）---
+    function LoginScreen({ onLogin }) {
+      const [classNum, setClassNum] = useState('208');
+      const [seatNum, setSeatNum] = useState('');
+      const [name, setName] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (classNum && seatNum && name) onLogin({ classNum, seatNum, name });
+      };
+
+      return (
+        <div
+          className="min-h-screen flex items-center justify-center p-4"
+          style={{ backgroundColor: '#e7e3dc', backgroundImage: `url(${COVER_IMG})`, backgroundSize: 'cover', backgroundPosition: 'center top', backgroundRepeat: 'no-repeat' }}
+        >
+          <BrutalContainer className="bg-white/95 w-full max-w-sm p-8 flex flex-col items-center gap-5">
+            <div className="text-center">
+              <span className="bg-[#fde047] border-2 border-black text-xs font-black px-3 py-1 rounded-full shadow-[2px_2px_0_0_#000]">LESSON 8</span>
+              <h2 className="text-2xl font-black text-red-600 leading-tight mt-3">Elephant Abuse: The Thai Tourism Industry’s Dark Secret</h2>
+            </div>
+            <div className="text-center">
+              <h1 className="text-3xl font-black italic text-indigo-600 mb-1">VOCAB<span className="text-pink-500">POP</span></h1>
+              <h3 className="font-bold text-gray-500 tracking-wider text-sm">STUDENT LOGIN</h3>
+            </div>
+
+            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block font-bold text-sm mb-1 text-gray-700">CLASS (班級) *</label>
+                  <select value={classNum} onChange={e => setClassNum(e.target.value)} className="w-full border-2 border-black rounded-lg p-3 font-bold bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <option value="208">208</option>
+                    <option value="211">211</option>
+                    <option value="216">216</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block font-bold text-sm mb-1 text-gray-700">NO. (座號) *</label>
+                  <input type="number" placeholder="e.g. 15" required value={seatNum} onChange={e => setSeatNum(e.target.value)} className="w-full border-2 border-black rounded-lg p-3 font-bold outline-none focus:ring-2 focus:ring-indigo-400" />
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold text-sm mb-1 text-gray-700">NAME (姓名) *</label>
+                <input type="text" placeholder="e.g. 王小明" required value={name} onChange={e => setName(e.target.value)} className="w-full border-2 border-black rounded-lg p-3 font-bold outline-none focus:ring-2 focus:ring-indigo-400" />
+              </div>
+              <BrutalButton type="submit" className="bg-[#6366f1] text-white py-4 mt-2 text-xl tracking-wide flex justify-center items-center gap-2">
+                START JOURNEY <span className="text-2xl leading-none">→</span>
+              </BrutalButton>
+            </form>
+          </BrutalContainer>
+        </div>
+      );
+    }
+
+    // --- 學習模式 (Learn Mode) ---
+    function LearnMode({ data, playAudio, onNext, onScore }) {
+      const [cards, setCards] = useState([]);
+      const [selectedCards, setSelectedCards] = useState([]);
+      const [matchedIds, setMatchedIds] = useState([]);
+      const topRef = useRef(null);
+
+      useEffect(() => {
+        requestAnimationFrame(() => {
+          if (topRef.current) topRef.current.scrollIntoView({ behavior: 'auto', block: 'start' });
+          window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        });
+        playAudio(data.word);
+        const initialCards = [];
+        data.matchPairs.forEach((pair, idx) => {
+          initialCards.push({ text: pair.en, type: 'en', id: idx });
+          initialCards.push({ text: pair.zh, type: 'zh', id: idx });
+        });
+        setCards(initialCards.sort(() => 0.5 - Math.random()));
+        setSelectedCards([]);
+        setMatchedIds([]);
+      }, [data]);
+
+      const handleCardClick = (card) => {
+        if (matchedIds.includes(card.id)) return;
+        if (selectedCards.some(c => c.text === card.text)) return;
+        if (selectedCards.length === 2) return;
+        const newSelected = [...selectedCards, card];
+        setSelectedCards(newSelected);
+        if (newSelected.length === 1) {
+          playTone('click');
+          if (card.type === 'en') playAudio(card.text);
+        } else if (newSelected.length === 2) {
+          if (newSelected[0].id === newSelected[1].id && newSelected[0].type !== newSelected[1].type) {
+            playTone('correct');
+            const newMatchedCount = matchedIds.length + 1;
+            setMatchedIds(prev => [...prev, newSelected[0].id]);
+            setSelectedCards([]);
+            if (newMatchedCount === data.matchPairs.length) onScore();
+          } else {
+            playTone('wrong');
+            setTimeout(() => setSelectedCards([]), 800);
+          }
+        }
+      };
+
+      return (
+        <BrutalContainer className="bg-white overflow-hidden flex flex-col mb-4 h-full">
+          <div ref={topRef}></div>
+          <div className="bg-[#4f46e5] text-white p-6 pb-8 relative flex flex-col items-center text-center">
+            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 2px, transparent 2px)', backgroundSize: '16px 16px' }}></div>
+            <div className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full self-start mb-4 relative z-10 border-2 border-white">{data.pos}</div>
+            <div className="bg-white/20 px-3 py-1 rounded-md text-sm font-mono tracking-widest mb-2 relative z-10">{data.kk}</div>
+            <h2 className="text-4xl font-black mb-4 relative z-10 tracking-tight">{data.word}</h2>
+            <div className="flex gap-2 mb-6 relative z-10 flex-wrap justify-center">
+              {data.syllables.map((syl, i) => (
+                <span key={i} className={`px-3 py-1 rounded text-sm font-bold shadow-sm transition-all ${data.stressIndex === i ? 'bg-yellow-400 text-black border-[2px] border-black shadow-[2px_2px_0_0_#000] scale-110 z-10' : 'bg-white/30 text-white border-[2px] border-transparent'}`}>{syl}</span>
+              ))}
+            </div>
+            <button onClick={() => { playTone('click'); playAudio(data.word); }} className="bg-white text-black w-16 h-16 rounded-full flex items-center justify-center border-[3px] border-black shadow-[4px_4px_0_0_#000] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#000] active:translate-y-[4px] active:shadow-none transition-all relative z-10">
+              <Icons.Volume />
+            </button>
+          </div>
+
+          <div className="p-6 flex flex-col gap-6 flex-1">
+            <div>
+              <h3 className="font-black text-xl flex items-center gap-2 mb-2">
+                <span className="w-3 h-3 bg-yellow-400 rounded-full border-2 border-black inline-block"></span> Meaning
+              </h3>
+              <p className="text-gray-700 font-medium pl-4 border-l-[3px] border-gray-200 text-lg">
+                {data.meaning} <span className="text-indigo-600 font-bold ml-1">({data.chinese})</span>
+              </p>
+            </div>
+
+            {data.wordFamily !== "-" && (
+              <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
+                <p className="text-indigo-600 font-bold text-sm mb-2 uppercase tracking-wide">🔗 Word Family & Collocations:</p>
+                <div className="flex flex-col gap-2">
+                  <div className="bg-white border border-indigo-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-800">{data.wordFamily}</div>
+                  <div className="bg-white border border-indigo-200 rounded-lg px-3 py-2 text-sm font-bold text-indigo-700 italic flex justify-between">" {data.matchPairs[0].en} "</div>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h3 className="font-black text-xl flex items-center gap-2 mb-2">
+                <span className="w-3 h-3 bg-green-400 rounded-full border-2 border-black inline-block"></span> Example
+              </h3>
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4 flex flex-col gap-2">
+                <span className="text-gray-700 italic text-base leading-relaxed">"{data.example}"</span>
+                <span className="text-indigo-700 font-bold text-sm border-t-2 border-gray-200 pt-2">{data.exampleChinese}</span>
+              </div>
+            </div>
+
+            <div className="bg-pink-50 border-2 border-pink-200 rounded-xl p-4 mt-2 mb-4">
+              <h4 className="font-bold text-pink-600 mb-1 flex items-center gap-2">✨ Mini Match (中英搭配詞)</h4>
+              <p className="text-sm font-bold text-gray-700 mb-3">請將下方的英文與對應的中文配對：</p>
+              <div className="grid grid-cols-2 gap-3">
+                {cards.map((card, i) => {
+                  const isSelected = selectedCards.some(c => c.text === card.text);
+                  const isMatched = matchedIds.includes(card.id);
+                  let btnClass = "bg-white text-gray-800 border-pink-200 hover:bg-pink-100";
+                  if (isMatched) btnClass = "bg-green-400 text-black border-black border-2 shadow-[2px_2px_0_0_#000] opacity-60 cursor-not-allowed";
+                  else if (isSelected) btnClass = "bg-yellow-300 text-black border-black border-2 shadow-[2px_2px_0_0_#000]";
+                  return (
+                    <button key={i} onClick={() => handleCardClick(card)} className={`p-4 rounded-lg font-bold text-[13px] transition-all border-2 ${btnClass}`}>{card.text}</button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 pt-0 w-full mt-auto">
+            <BrutalButton onClick={(e) => { if (e && e.currentTarget) e.currentTarget.blur(); onNext(); }} className="w-full bg-black text-white py-4 text-lg shadow-[4px_4px_0_0_#cbd5e1] hover:bg-gray-800">
+              NEXT WORD →
+            </BrutalButton>
+          </div>
+        </BrutalContainer>
+      );
+    }
+
+    // --- 教練模式選單 (Coach Menu) ---
+    function CoachMenu({ startQuiz }) {
+      return (
+        <div className="flex flex-col gap-4">
+          <BrutalButton onClick={() => startQuiz('prospeak')} className="bg-[#86efac] p-6 flex flex-col items-center justify-center gap-2">
+            <Icons.Mic />
+            <span className="font-black text-2xl">PRO SPEAK</span>
+            <span className="text-sm font-bold text-gray-800">發音挑戰 (隨機 15 題)</span>
+          </BrutalButton>
+          <BrutalButton onClick={() => startQuiz('spellit')} className="bg-[#a5b4fc] p-6 flex flex-col items-center justify-center gap-2">
+            <Icons.Keyboard />
+            <span className="font-black text-2xl">SPELL IT</span>
+            <span className="text-sm font-bold text-gray-800">課本單字聽寫 (隨機 15 題)</span>
+          </BrutalButton>
+          <BrutalButton onClick={() => startQuiz('fillin')} className="bg-[#fdba74] p-6 flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-orange-400 rounded-bl-full opacity-50"></div>
+            <Icons.Pen />
+            <span className="font-black text-2xl relative z-10">FILL IN</span>
+            <span className="text-sm font-bold text-gray-800 relative z-10">單字克漏字 (隨機 15 題)</span>
+          </BrutalButton>
+        </div>
+      );
+    }
+
+    // --- 發音挑戰 (Pro Speak) ---
+    function ProSpeakMode({ data, playAudio, onNext, onScore }) {
+      const [status, setStatus] = useState('idle');
+      const [transcript, setTranscript] = useState('');
+
+      const handleListen = () => {
+        playTone('click');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setStatus('error');
+          setTranscript('瀏覽器不支援，請使用 Chrome 或允許麥克風權限。');
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => { setStatus('listening'); setTranscript(''); };
+
+        recognition.onresult = (event) => {
+          const speechResult = event.results[0][0].transcript.toLowerCase().trim();
+          setTranscript(speechResult);
+          const strip = (s) => s.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()’']/g, "").replace(/\s+/g, " ").trim();
+          const cleanResult = strip(speechResult);
+          const cleanTarget = strip(cleanWord(data.word).toLowerCase());
+          if (cleanResult.includes(cleanTarget) || cleanTarget.includes(cleanResult)) {
+            playTone('correct'); setStatus('success'); onScore();
+          } else {
+            playTone('wrong'); setStatus('error');
+          }
+        };
+
+        recognition.onerror = (event) => {
+          setStatus('error');
+          if (event.error === 'not-allowed') setTranscript('麥克風權限被拒絕，請允許權限或點擊跳過。');
+          else setTranscript('發生錯誤: ' + event.error);
+        };
+
+        recognition.onend = () => { if (status === 'listening') setStatus('idle'); };
+        recognition.start();
+      };
+
+      return (
+        <BrutalContainer className="bg-white p-6 flex flex-col items-center text-center min-h-[400px]">
+          <div className="self-end bg-gray-200 px-3 py-1 rounded-full text-sm font-bold mb-4">VOCAB <span className="text-indigo-600">PRO</span></div>
+          <h2 className="text-4xl font-black mt-8 mb-4">{data.word}</h2>
+          <div className="bg-gray-100 px-4 py-2 rounded-lg font-mono text-lg tracking-widest mb-12 border-2 border-gray-300">{data.kk}</div>
+
+          <button onClick={handleListen} className={`w-32 h-32 rounded-full border-[4px] border-black shadow-[6px_6px_0_0_#000] flex items-center justify-center transition-all ${status === 'listening' ? 'bg-red-400 animate-pulse translate-y-[2px] shadow-[4px_4px_0_0_#000]' : 'bg-[#fde047] hover:bg-yellow-300'}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{MicShape}</svg>
+          </button>
+
+          <div className="mt-8 font-bold text-lg min-h-[2rem]">
+            {status === 'listening' && <span className="text-red-500">Listening...</span>}
+            {status === 'success' && <span className="text-green-500">Excellent! ({transcript})</span>}
+            {status === 'error' && <span className="text-red-500">{transcript.includes('瀏覽器') || transcript.includes('權限') || transcript.includes('錯誤') ? transcript : `Heard: "${transcript}". Try again!`}</span>}
+            {status === 'idle' && <span>TAP TO RECORD</span>}
+          </div>
+
+          <div className="mt-auto w-full pt-6 flex flex-col gap-3">
+            {status === 'success' ? (
+              <BrutalButton onClick={() => {setStatus('idle'); onNext();}} className="w-full bg-black text-white py-4 text-lg">NEXT QUESTION →</BrutalButton>
+            ) : (
+              <button onClick={() => {setStatus('idle'); onNext();}} className="text-gray-400 text-sm font-bold hover:text-gray-600 underline py-2">無法使用麥克風？點此跳過此題</button>
+            )}
+          </div>
+        </BrutalContainer>
+      );
+    }
+
+    // --- 聽寫測驗 (Spell It) ---
+    function SpellItMode({ data, playAudio, onNext, onScore }) {
+      const [input, setInput] = useState('');
+      const [status, setStatus] = useState('idle');
+      const spellTarget = cleanWord(data.word);
+
+      useEffect(() => {
+        playAudio(data.word);
+        setInput('');
+        setStatus('idle');
+      }, [data]);
+
+      const handleCheck = () => {
+        const norm = (s) => s.toLowerCase().replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+        if (norm(input) === norm(spellTarget)) {
+          playTone('correct'); setStatus('success'); onScore();
+        } else {
+          playTone('wrong'); setStatus('error');
+        }
+      };
+
+      return (
+        <BrutalContainer className="bg-[#fff7ed] p-6 flex flex-col items-center text-center">
+          <div className="w-full flex justify-end mb-4">
+            <span className="bg-gray-200 px-3 py-1 rounded-full text-sm font-bold text-gray-600">DICTATION</span>
+          </div>
+
+          <button onClick={() => { playTone('click'); playAudio(data.word); }} className="w-24 h-24 bg-[#a5b4fc] rounded-full border-[3px] border-black shadow-[4px_4px_0_0_#000] flex items-center justify-center mb-8 hover:bg-indigo-300 transition-colors hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{VolShape}</svg>
+          </button>
+
+          <p className="text-lg font-bold text-gray-800 mb-4 px-4 border-l-4 border-indigo-400 text-left w-full">
+            "{data.meaning}" <br/>
+            <span className="text-indigo-600 text-sm mt-1 block">({data.chinese})</span>
+          </p>
+
+          <div className="bg-black text-white px-4 py-1 rounded-full text-sm font-bold mb-8">
+            {data.pos} • {spellTarget.length} letters/chars
+          </div>
+
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => {setInput(e.target.value); setStatus('idle');}}
+            placeholder="Type here..."
+            className={`w-full text-center text-3xl font-black p-4 bg-transparent border-b-4 outline-none transition-colors ${status === 'error' ? 'border-red-500 text-red-600' : 'border-indigo-500 text-indigo-900'}`}
+          />
+          {status === 'error' && <p className="text-red-500 font-bold mt-2">Try again!</p>}
+
+          <div className="mt-12 w-full">
+            {status === 'success' ? (
+              <BrutalButton onClick={onNext} className="w-full bg-green-400 py-4 text-xl">CORRECT! NEXT →</BrutalButton>
+            ) : (
+              <BrutalButton onClick={handleCheck} className="w-full bg-black text-white py-4 text-xl">CHECK ANSWER</BrutalButton>
+            )}
+          </div>
+        </BrutalContainer>
+      );
+    }
+
+    // 從字典字根 (data.word，可能包含 "..." 或括號) 取出可比對的基礎詞形
+    function getBaseTokens(baseWordField) {
+      return cleanWord(baseWordField).split(/\s+/).filter(Boolean);
+    }
+
+    // 比對此字與所有基礎詞形，找出最長共同字首，推算「時態/型態變化」字尾並完整顯示
+    function buildBlank(word, baseTokens) {
+      const lw = word.toLowerCase();
+      if (word.length <= 2) return "_ ".repeat(word.length).trim();
+
+      let bestPrefixLen = 0;
+      baseTokens.forEach(bt => {
+        const lbt = bt.toLowerCase();
+        let len = 0;
+        const maxLen = Math.min(lw.length, lbt.length);
+        while (len < maxLen && lw[len] === lbt[len]) len++;
+        if (len > bestPrefixLen) bestPrefixLen = len;
+      });
+
+      const suffixLen = word.length - bestPrefixLen;
+
+      if (bestPrefixLen >= 1 && suffixLen >= 1) {
+        const middleLen = word.length - 1 - suffixLen;
+        const suffix = word.slice(word.length - suffixLen).split('').join(' ');
+        return word[0] + (middleLen > 0 ? ' ' + "_ ".repeat(middleLen).trim() : '') + ' ' + suffix;
+      }
+      return word[0] + ' ' + "_ ".repeat(Math.max(word.length - 2, 0)).trim() + ' ' + word[word.length - 1];
+    }
+
+    // --- 填充測驗 (Fill In) 支援片語拆解 ---
+    function FillInMode({ data, onNext, onScore }) {
+      const [input, setInput] = useState('');
+      const [status, setStatus] = useState('idle');
+      const [showHint, setShowHint] = useState(false);
+
+      useEffect(() => { setInput(''); setStatus('idle'); setShowHint(false); }, [data]);
+
+      const targetWord = data.targetInExample;
+      const baseTokens = getBaseTokens(data.word);
+      const blankStr = targetWord.split(' ').map(w => buildBlank(w, baseTokens)).join('   ');
+
+      const parts = data.example.split(new RegExp(`\\b${targetWord}\\b`, 'i'));
+      const renderPrefix = parts[0] !== undefined ? parts[0] : "";
+      const renderSuffix = parts[1] !== undefined ? parts[1] : "";
+
+      const handleCheck = () => {
+        const norm = (s) => s.toLowerCase().replace(/’/g, "'").replace(/\s+/g, ' ').trim();
+        if (norm(input) === norm(targetWord)) {
+          playTone('correct'); setStatus('success'); onScore();
+        } else {
+          playTone('wrong'); setStatus('error');
+        }
+      };
+
+      return (
+        <BrutalContainer className="bg-white p-6">
+          <div className="flex justify-between items-center mb-6">
+            <span className="bg-pink-100 text-pink-700 border-2 border-pink-300 px-3 py-1 rounded-md text-sm font-bold shadow-sm">Grammar & Collocation</span>
+            <span className="text-gray-400 font-bold text-sm">FILL IN</span>
+          </div>
+
+          <div className="text-2xl font-medium leading-relaxed mb-8 text-gray-800">
+            {renderPrefix}
+            <span className="inline-block mx-2 border-b-4 border-black px-2 pb-1 font-mono font-bold text-orange-500 bg-orange-50 relative top-1">{blankStr}</span>
+            {renderSuffix}
+          </div>
+
+          <button onClick={() => { playTone('click'); setShowHint(!showHint); }} className="text-blue-600 font-bold text-sm hover:underline mb-4">
+            {showHint ? "Hide Translation (Hint)" : "Show Translation (Hint)"}
+          </button>
+
+          {showHint && (
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-6 text-gray-700 font-medium rounded-r-lg text-sm">中譯提示：{data.exampleChinese}</div>
+          )}
+
+          <div className="mt-4">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => {setInput(e.target.value); setStatus('idle');}}
+              placeholder="Type the missing part..."
+              className={`w-full border-2 border-black rounded-xl p-4 text-xl font-bold outline-none focus:ring-4 focus:ring-orange-200 transition-all shadow-[4px_4px_0_0_#000] ${status === 'error' ? 'bg-red-50 text-red-600 border-red-500' : 'bg-white text-black'}`}
+            />
+          </div>
+
+          {status === 'error' && <p className="text-red-500 font-bold mt-3 text-center">Incorrect, check your spelling!</p>}
+
+          <div className="mt-8">
+            {status === 'success' ? (
+              <BrutalButton onClick={onNext} className="w-full bg-green-400 py-4 text-xl">AWESOME! NEXT →</BrutalButton>
+            ) : (
+              <BrutalButton onClick={handleCheck} className="w-full bg-black text-white py-4 text-xl">CHECK ANSWER</BrutalButton>
+            )}
+          </div>
+        </BrutalContainer>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
